@@ -1,0 +1,19 @@
+{
+  "name": "PWEB-pia",
+  "version": "1.0.0",
+  "description": "Proyecto de programación web",
+  "main": "index.js",
+  "dependencies": {
+    "express": "^5.1.0",
+    "ejs": "^3.1.10"
+  },
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "start": ""
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/lgomzs105/E4-216-PIA-PWEB-LAB.git"
+  },
+  "private": true
+}
