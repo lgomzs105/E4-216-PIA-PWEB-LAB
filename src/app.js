@@ -1,15 +1,21 @@
-const express = require('express');
-const path = require('path');
+import express from 'express';
+import path from 'path';
+import { fileURLToPath } from 'url';
+
+import ubicacionRouter from './routes/ubicacion.routes.js';
+import menuRouter from './routes/menu.routes.js';
+import usersRouter from './routes/users.routes.js';
+import user_opRouter from './routes/gestionUsuarios.routes.js';
+import reportesRouter from './routes/gestionReservas.routes.js';
+import gestionHorarios from './routes/gestionHorarios.routes.js';
+import gestionDisponibilidad from './routes/gestionDisponibilidad.routes.js';
+
+// Necesario para __dirname en ESM
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
+
 const app = express();
 const port = 3000;
-
-const ubicacionRouter = require('./routers/ubicacion.routes');
-const menuRouter = require('./routers/menu.routes');
-const usersRouter = require('./routers/users.routes');
-const user_opRouter = require('./routers/gestionUsuarios.routes');
-const reportesRouter =require('./routers/gestionReservas.routes');
-const gestionHorarios = require('./routers/gestionHorarios.routes');
-const gestionDisponibilidad = require('./routers/gestionDisponibilidad.routes');
 
 // Servir archivos estáticos desde public/
 app.use(express.static(path.join(__dirname, '../public')));
@@ -29,5 +35,5 @@ app.use(gestionHorarios);
 app.use(gestionDisponibilidad);
 
 app.listen(port, () => {
-    console.log(`Servidor corriendo en el puerto http://localhost:${port}/`);
+  console.log(`Servidor corriendo en http://localhost:${port}/`);
 });
