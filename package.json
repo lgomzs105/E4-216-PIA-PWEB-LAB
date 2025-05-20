@@ -4,6 +4,7 @@
   "description": "Proyecto de programación web",
   "main": "index.js",
   "dependencies": {
+    "bootstrap": "^5.3.5",
     "express": "^5.1.0",
     "ejs": "^3.1.10"
   },
