@@ -1,75 +1,89 @@
-CREATE TABLE restaurante (
-    id_restaurante SERIAL PRIMARY KEY,
-    nombre VARCHAR(255) NOT NULL,
-    direccion VARCHAR(255) NOT NULL,
-    ciudad VARCHAR(100) NOT NULL,
-    estado VARCHAR(100) NOT NULL,
-    codigo_postal VARCHAR(20) NOT NULL
-);
-
-CREATE TABLE rol (
-    id_rol SERIAL PRIMARY KEY,
-    descripcion VARCHAR(100) NOT NULL
-);
-
-CREATE TABLE empleado (
-    id_empleado SERIAL PRIMARY KEY,
-    nombre VARCHAR(100) NOT NULL,
-    apellidos VARCHAR(100) NOT NULL,
-    correo VARCHAR(255) UNIQUE NOT NULL,
-    telefono VARCHAR(20) NOT NULL,
-    contrasena VARCHAR(255) NOT NULL,
-    id_rol INT NOT NULL,
-    id_restaurante INT NOT NULL,
-    FOREIGN KEY (id_rol) REFERENCES rol(id_rol) ON DELETE CASCADE,
-    FOREIGN KEY (id_restaurante) REFERENCES restaurante(id_restaurante) ON DELETE CASCADE
-);
-
-CREATE TABLE estado_reserva (
-    id_estado SERIAL PRIMARY KEY,
-    descripcion VARCHAR(100) NOT NULL
-);
-
-CREATE TABLE reserva (
-    id_reserva SERIAL PRIMARY KEY,
-    fecha_hora TIMESTAMP NOT NULL,
-    cantidad_personas INT NOT NULL CHECK (cantidad_personas > 0),
-    nombre VARCHAR(100) NOT NULL,
-    apellido VARCHAR(100) NOT NULL,
-    telefono VARCHAR(20) NOT NULL,
-    correo VARCHAR(255) NOT NULL,
-    ocasion VARCHAR(255),
-    id_estado INT NOT NULL,
-    id_restaurante INT NOT NULL,
-    FOREIGN KEY (id_estado) REFERENCES estado_reserva(id_estado) ON DELETE CASCADE,
-    FOREIGN KEY (id_restaurante) REFERENCES restaurante(id_restaurante) ON DELETE CASCADE
-);
-
-CREATE TABLE horario_restaurante (
-    id_horario_restaurante SERIAL PRIMARY KEY,
-    dia VARCHAR(15) NOT NULL CHECK (dia IN ('Lunes', 'Martes', 'Miércoles', 'Jueves', 'Viernes', 'Sábado', 'Domingo')),
-    abierto BOOLEAN NOT NULL,
-    hora_apertura TIME,
-    hora_cierre TIME,
-    capacidad INT NOT NULL CHECK (capacidad >= 0),
-    id_restaurante INT NOT NULL,
-    FOREIGN KEY (id_restaurante) REFERENCES restaurante(id_restaurante) ON DELETE CASCADE
-);
-
-CREATE TABLE horario_reserva (
-    id_horario_reserva SERIAL PRIMARY KEY,
-    hora_inicio TIME NOT NULL,
-    hora_fin TIME NOT NULL,
-    disponible BOOLEAN DEFAULT TRUE NOT NULL
-);
-  
-CREATE TABLE menu (
-    id_menu SERIAL PRIMARY KEY,
-    archivo FILE
-);
-
 INSERT INTO restaurante (nombre, direccion, ciudad, estado, codigo_postal)
 VALUES ('BigFish', 'Dalea 821, El Sabino Cerrada Residencial',
         'Monterrey', 'Nuevo León', '64984');
 
 SELECT * FROM restaurante;
+
+--Funciones
+
+CREATE OR REPLACE FUNCTION verificar_disponibilidad(
+    p_fecha DATE,
+    p_hora_inicio TIME,
+    p_hora_fin TIME,
+    p_cantidad_personas INTEGER
+) RETURNS BOOLEAN AS $$
+DECLARE
+    capacidad_disponible INTEGER;
+    reservas_existentes INTEGER;
+    dia_semana TEXT;
+BEGIN
+    dia_semana := TO_CHAR(p_fecha, 'Day');
+
+    -- Obtener capacidad del restaurante para ese día
+    SELECT capacidad INTO capacidad_disponible
+    FROM horario_restaurante
+    WHERE dia = dia_semana
+      AND abierto = true;
+
+    -- Calcular personas ya reservadas en ese horario
+    SELECT COALESCE(SUM(cantidad_personas), 0) INTO reservas_existentes
+    FROM reserva
+    WHERE fecha = p_fecha
+      AND (
+        (hora_inicio BETWEEN p_hora_inicio AND p_hora_fin)
+            OR (hora_fin BETWEEN p_hora_inicio AND p_hora_fin)
+            OR (p_hora_inicio BETWEEN hora_inicio AND hora_fin)
+        )
+      AND id_estado != 3; -- Excluir reservas canceladas
+
+    -- Verificar disponibilidad
+    RETURN (capacidad_disponible - reservas_existentes) >= p_cantidad_personas;
+END;
+$$ LANGUAGE plpgsql;
+
+CREATE OR REPLACE FUNCTION contar_reservas_por_estado(
+    p_id_estado INTEGER DEFAULT NULL
+) RETURNS INTEGER AS $$
+BEGIN
+    IF p_id_estado IS NULL THEN
+        RETURN (SELECT COUNT(*) FROM reserva);
+    ELSE
+        RETURN (
+            SELECT COUNT(*)
+            FROM reserva
+            WHERE id_estado = p_id_estado
+        );
+    END IF;
+END;
+$$ LANGUAGE plpgsql;
+
+CREATE OR REPLACE FUNCTION obtener_horario_por_día()
+    RETURNS TABLE (
+                      dia_semana VARCHAR(15),
+                      abierto BOOLEAN,
+                      hora_apertura TIME,
+                      hora_cierre TIME,
+                      capacidad INTEGER
+                  ) AS $$
+BEGIN
+    RETURN QUERY
+        SELECT
+            hr.dia,
+            hr.abierto,
+            hr.hora_apertura,
+            hr.hora_clerre,
+            hr.capacidad
+        FROM
+            horario_restaurante hr
+        ORDER BY
+            CASE hr.dia
+                WHEN 'Lunes' THEN 1
+                WHEN 'Martes' THEN 2
+                WHEN 'Miércoles' THEN 3
+                WHEN 'Jueves' THEN 4
+                WHEN 'Viernes' THEN 5
+                WHEN 'Sábado' THEN 6
+                WHEN 'Domingo' THEN 7
+                END;
+END;
+$$ LANGUAGE plpgsql;
