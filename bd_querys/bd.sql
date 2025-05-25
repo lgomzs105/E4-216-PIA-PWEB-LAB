@@ -71,7 +71,7 @@ BEGIN
             hr.dia,
             hr.abierto,
             hr.hora_apertura,
-            hr.hora_clerre,
+            hr.hora_cierre,
             hr.capacidad
         FROM
             horario_restaurante hr
