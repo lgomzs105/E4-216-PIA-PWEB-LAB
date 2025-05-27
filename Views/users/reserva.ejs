@@ -31,32 +31,36 @@
         </ul>
     </div>
 
-    <div class="card-body m-auto">
-        <ul class="nav nav-pills">
-                <button type="button" class="btn btn-light dropdown-toggle mx-3" data-bs-toggle="dropdown" href="#" aria-expanded="false">Personas</button>
-                <ul class="dropdown-menu">
+    <div class="card-body m-auto" id="form-agregar-reserva">
 
-                </ul>
-                <button type="button" class="btn btn-light dropdown-toggle mx-3" data-bs-toggle="dropdown" href="#" aria-expanded="false">Fecha</button>
-                <ul class="dropdown-menu">
+        <!-- Formulario principal -->
+        <div id="formulario-principal">
+                <h5>Datos de reserva</h5>
+                <div class="row">
+                    Personas
+                    <input type="number" class="form-control mb-2" style="width:70px;" name="cantidad_personas" id="personas" placeholder="20">
+                    Hora_inicio
+                    <input type="time" class="form-control mb-2"style="width: 125px;" name="hora_inicio" id="hora">
+                </div>
+            <div class="row">
+                Fecha
+                <input type="date" class="form-control mb-2" id="fecha" name="fecha" placeholder="2023-01-01" style="width: 175px;">
+                <button type="button" class="form-control mb-2" name="mostrar_horarios" >Mostrar horarios disponibles</button>
+                <ul class="dropdown-menu" id="horarios_disponibles"></ul>
+                <button type="button" class="btn btn-danger" id="btn_datos">Siguiente</button>
+            </div>
+        </div>
 
-                </ul>
-                <button type="button" class="btn btn-light dropdown-toggle mx-3" data-bs-toggle="dropdown" href="#" aria-expanded="false">Hora</button>
-                <ul class="dropdown-menu">
-
-                </ul>
-                <button type="button" class="btn btn-light dropdown-toggle mx-3" data-bs-toggle="dropdown" href="#" aria-expanded="false">Mostrar horarios</button>
-                <ul class="dropdown-menu">
-
-                </ul>
-        </ul>
-
-        <button type="button" class="btn btn-danger" id="btn-reserva">Reservar</button>
-
-
+        <!-- Formulario adicional oculto -->
+        <div id="formulario-adicional" style="display: none;">
+            <h5>Tus datos</h5>
+            <input type="text" class="form-control mb-2" placeholder="Nombre" id="nombre">
+            <input type="tel" class="form-control mb-2" placeholder="Teléfono" id="telefono">
+            <button type="button" class="btn btn-secondary" id="btn_volver">Volver</button>
+            <button type="submit" class="btn btn-danger" id>Enviar</button>
+        </div>
 
     </div>
-
 
     <div class="card-footer">
         <ul>
@@ -132,6 +136,10 @@
         text-align: right;
     }
 </style>
+
+
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.7.1/jquery.min.js"></script>
+<script src="/scripts/creacionReserva.js"></script>
 
 </body>
 </html>
